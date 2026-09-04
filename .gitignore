@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.env
+frontend/.env
+*.db
+
+# Node
+node_modules/
+dist/
+
+# IDE
+.vscode/
+.DS_Store
+
+# Project data
+uploads/*
+!uploads/.gitkeep

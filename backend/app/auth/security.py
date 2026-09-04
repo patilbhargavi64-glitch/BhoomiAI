@@ -1,0 +1,38 @@
+from datetime import datetime, timedelta
+from typing import Any
+
+import jwt
+from jwt import InvalidTokenError
+from passlib.context import CryptContext
+
+from app.config import get_settings
+
+settings = get_settings()
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
+
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+def get_password_hash(password: str) -> str:
+    return pwd_context.hash(password)
+
+
+def create_access_token(subject: str | dict[str, Any] | Any, expires_delta: timedelta | None = None) -> str:
+    if expires_delta is None:
+        expires_delta = timedelta(minutes=settings.access_token_expire_minutes)
+    expires = datetime.utcnow() + expires_delta
+    payload = {"exp": expires}
+    if isinstance(subject, dict):
+        payload["sub"] = subject
+    else:
+        payload["sub"] = str(subject)
+    return jwt.encode(payload, settings.secret_key, algorithm=settings.algorithm)
+
+
+def decode_access_token(token: str):
+    try:
+        return jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
+    except InvalidTokenError:
+        return None
